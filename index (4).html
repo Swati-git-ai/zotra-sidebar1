@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zotra</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<style>
+/* ════════════════════════════════════════════════════════════
+   RESET & BASE
+════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, 'Segoe UI', 'Inter', sans-serif;
+  font-size: 13px;
+  background: #f1f3f4;
+  color: #202124;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Design tokens ── */
+:root {
+  --z-bg:         #F8F7F4;
+  --z-surface:    #FFFFFF;
+  --z-border:     #E8E6E0;
+  --z-border-s:   #D3D1C7;
+  --z-text:       #1A1A18;
+  --z-text-2:     #5F5E5A;
+  --z-text-3:     #888780;
+  --z-accent:     #534AB7;
+  --z-accent-h:   #3C3489;
+  --z-accent-bg:  #EEEDFE;
+  --z-accent-tx:  #3C3489;
+  --z-teal:       #1D9E75;
+  --z-teal-bg:    #E1F5EE;
+  --z-teal-tx:    #085041;
+  --z-amber:      #BA7517;
+  --z-amber-bg:   #FAEEDA;
+  --z-amber-tx:   #633806;
+  --z-red:        #E24B4A;
+  --z-red-bg:     #FCEBEB;
+  --z-red-tx:     #A32D2D;
+  --z-green:      #639922;
+  --z-green-bg:   #EAF3DE;
+  --z-green-tx:   #27500A;
+  --z-r-xs:       3px;
+  --z-r-sm:       4px;
+  --z-r-md:       6px;
+  --z-r-lg:       8px;
+  --z-r-xl:       10px;
+  --z-r-full:     9999px;
+  --z-t:          0.12s ease;
+}
+
+/* ════════════════════════════════════════════════════════════
+   GMAIL CHROME MOCKUP (shows the add-in in context)
+════════════════════════════════════════════════════════════ */
+.gmail-chrome {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+/* top bar */
+.gmail-topbar {
+  height: 64px;
+  background: #fff;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 12px;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+.gmail-logo { display: flex; align-items: center; gap: 6px; }
+.gmail-logo-m {
+  width: 28px; height: 28px;
+  background: linear-gradient(135deg, #EA4335 0%, #FBBC05 35%, #34A853 65%, #4285F4 100%);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #fff;
+}
+.gmail-logo-txt { font-size: 22px; color: #5f6368; font-weight: 300; letter-spacing: -0.5px; }
+.gmail-srch {
+  flex: 1; max-width: 720px; height: 46px;
+  background: #eaf1fb; border-radius: 24px;
+  display: flex; align-items: center; padding: 0 16px; gap: 10px;
+}
+.gmail-srch input {
+  flex: 1; background: none; border: none; outline: none;
+  font-size: 16px; color: #202124;
+}
+.gmail-srch input::placeholder { color: #5f6368; }
+/* content area */
+.gmail-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+/* left nav */
+.gmail-nav {
+  width: 72px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0;
+  gap: 4px;
+  flex-shrink: 0;
+  border-right: 1px solid #e0e0e0;
+}
+.gmail-nav-btn {
+  width: 56px; height: 48px; border-radius: 24px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  cursor: pointer; gap: 2px;
+}
+.gmail-nav-btn:hover { background: #f1f3f4; }
+.gmail-nav-btn.active { background: #fce8e6; }
+.gmail-nav-btn svg { width: 20px; height: 20px; stroke: #5f6368; fill: none; stroke-width: 1.5; stroke-linecap: round; }
+.gmail-nav-btn.active svg { stroke: #d93025; }
+.gmail-nav-lbl { font-size: 9px; color: #5f6368; }
+.gmail-nav-btn.active .gmail-nav-lbl { color: #d93025; }
+/* email list pane */
+.gmail-list {
+  width: 280px;
+  background: #fff;
+  border-right: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.gmail-list-hdr {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #f1f3f4;
+}
+.gmail-list-title { font-size: 16px; font-weight: 400; color: #202124; }
+.gmail-list-items { flex: 1; overflow-y: auto; }
+.gmail-email-row {
+  padding: 8px 16px;
+  border-bottom: 1px solid #f1f3f4;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  transition: background 0.1s;
+}
+.gmail-email-row:hover { background: #f1f3f4; }
+.gmail-email-row.active { background: #fce8e6; }
+.gmail-email-row.unread .gmail-er-sender { font-weight: 600; }
+.gmail-er-av {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; color: #fff; flex-shrink: 0;
+}
+.gmail-er-body { flex: 1; min-width: 0; }
+.gmail-er-r1 { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
+.gmail-er-sender { font-size: 13px; color: #202124; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+.gmail-er-time { font-size: 11px; color: #5f6368; flex-shrink: 0; }
+.gmail-er-subj { font-size: 12px; color: #202124; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 1px; }
+.gmail-er-snip { font-size: 11px; color: #5f6368; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* email view pane */
+.gmail-view {
+  flex: 1;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+.gmail-view-hdr {
+  padding: 12px 20px 8px;
+  border-bottom: 1px solid #e0e0e0;
+  flex-shrink: 0;
+}
+.gmail-view-subject { font-size: 22px; font-weight: 400; color: #202124; margin-bottom: 4px; }
+.gmail-view-meta { font-size: 12px; color: #5f6368; display: flex; align-items: center; gap: 8px; }
+.gmail-view-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+.gmail-email-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.gmail-ec-hdr {
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+}
+.gmail-ec-av {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; color: #fff; flex-shrink: 0;
+}
+.gmail-ec-name { font-size: 13px; font-weight: 500; }
+.gmail-ec-time { font-size: 11px; color: #5f6368; margin-left: auto; }
+.gmail-ec-body {
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #3c4043;
+  line-height: 1.7;
+  border-top: 1px solid #f1f3f4;
+}
+/* add-in sidebar slot */
+.gmail-addin-slot {
+  width: 380px;
+  flex-shrink: 0;
+  border-left: 1px solid #e0e0e0;
+  background: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ════════════════════════════════════════════════════════════
+   ZOTRA ADD-IN SIDEBAR
+════════════════════════════════════════════════════════════ */
+.z-sidebar {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--z-surface);
+  overflow: hidden;
+  font-family: -apple-system, 'Segoe UI', 'Inter', sans-serif;
+}
+
+/* ── Shell: header ── */
+.z-shell-hdr {
+  padding: 10px 13px 9px;
+  background: var(--z-surface);
+  border-bottom: 0.5px solid var(--z-border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.z-wordmark {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+.z-wordmark-logo {
+  width: 22px; height: 22px;
+  background: var(--z-accent);
+  border-radius: var(--z-r-sm);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.z-wordmark-logo svg { width: 13px; height: 13px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; }
+.z-wordmark-name { font-size: 13px; font-weight: 600; color: var(--z-text); letter-spacing: -0.2px; }
+.z-account-name { font-size: 10px; color: var(--z-text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
+.z-conn-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--z-teal);
+  flex-shrink: 0;
+  cursor: help;
+  position: relative;
+}
+.z-conn-dot::after {
+  content: attr(data-tip);
+  position: absolute; right: 0; top: 100%; margin-top: 5px;
+  background: var(--z-text); color: #fff; font-size: 9px;
+  padding: 3px 7px; border-radius: 3px; white-space: nowrap;
+  display: none; z-index: 20;
+}
+.z-conn-dot:hover::after { display: block; }
+.z-open-btn {
+  font-size: 10px; color: var(--z-accent-tx);
+  background: none; border: none; cursor: pointer;
+  padding: 2px 5px; border-radius: var(--z-r-sm);
+  white-space: nowrap; font-family: inherit;
+  display: flex; align-items: center; gap: 3px;
+  transition: background var(--z-t);
+}
+.z-open-btn:hover { background: var(--z-accent-bg); }
+.z-open-btn svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; }
+
+/* ── Shell: tabs ── */
+.z-tabs {
+  display: flex;
+  background: var(--z-surface);
+  border-bottom: 0.5px solid var(--z-border);
+  flex-shrink: 0;
+}
+.z-tab {
+  flex: 1;
+  padding: 8px 4px;
+  font-size: 11px;
+  color: var(--z-text-3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  background: none;
+  border-top: none; border-left: none; border-right: none;
+  text-align: center;
+  user-select: none;
+  font-family: inherit;
+  transition: color var(--z-t);
+  white-space: nowrap;
+}
+.z-tab:hover { color: var(--z-text-2); }
+.z-tab.on { color: var(--z-accent-tx); border-bottom-color: var(--z-accent); font-weight: 500; }
+.z-tab-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--z-accent); color: #fff;
+  font-size: 8px; font-weight: 600; margin-left: 3px;
+  vertical-align: middle;
+}
+
+/* ── Scrollable content zone ── */
+.z-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.z-zone { display: none; }
+.z-zone.on { display: block; }
+
+/* ── Provisional notice ── */
+.z-prov-notice {
+  padding: 6px 13px;
+  background: var(--z-amber-bg);
+  border-bottom: 0.5px solid var(--z-border);
+  font-size: 9px;
+  color: var(--z-amber-tx);
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.z-prov-notice svg { width: 10px; height: 10px; stroke: currentColor; fill: none; stroke-width: 1.5; flex-shrink: 0; }
+
+/* ── Section ── */
+.z-sec {
+  padding: 9px 13px;
+  border-bottom: 0.5px solid var(--z-border);
+}
+.z-sec:last-child { border-bottom: none; }
+.z-sec-lbl {
+  font-size: 9px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: .06em;
+  color: var(--z-text-3);
+  margin-bottom: 7px;
+  display: flex; align-items: center; gap: 5px;
+}
+.z-sec-lbl span { font-weight: 400; text-transform: none; letter-spacing: 0; font-size: 9px; }
+
+/* ── Classification badge ── */
+.z-cls {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 9px; border-radius: var(--z-r-full);
+  font-size: 11px; font-weight: 500;
+  margin-bottom: 0;
+}
+.z-cls-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.z-cls-commercial { background: var(--z-accent-bg); color: var(--z-accent-tx); }
+.z-cls-preq       { background: var(--z-amber-bg);  color: var(--z-amber-tx);  }
+.z-cls-not        { background: var(--z-bg); color: var(--z-text-3); border: 0.5px solid var(--z-border); }
+
+/* ── Five Forces mini ── */
+.z-ff-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.z-ff-cell {
+  background: var(--z-bg);
+  border-radius: var(--z-r-md);
+  padding: 7px 9px;
+}
+.z-ff-nm { font-size: 9px; color: var(--z-text-3); margin-bottom: 3px; display: flex; align-items: center; gap: 4px; }
+.z-ff-nm .band { font-size: 8px; font-weight: 500; padding: 0 4px; border-radius: 2px; }
+.band-strong { background: var(--z-teal-bg);  color: var(--z-teal-tx);  }
+.band-caution{ background: var(--z-amber-bg); color: var(--z-amber-tx); }
+.band-weak   { background: var(--z-red-bg);   color: var(--z-red-tx);   }
+.band-null   { background: var(--z-bg); color: var(--z-text-3); border: 0.5px solid var(--z-border); cursor: help; text-decoration: underline dotted; }
+.z-ff-bar-w { height: 3px; background: var(--z-border); border-radius: 2px; overflow: hidden; margin-bottom: 3px; }
+.z-ff-bar-f { height: 100%; border-radius: 2px; transition: width .4s; }
+.z-ff-score { font-size: 15px; font-weight: 500; line-height: 1; }
+
+/* ── Pre-qual block ── */
+.z-preq-block {
+  background: var(--z-amber-bg);
+  border: 0.5px solid var(--z-amber);
+  border-radius: var(--z-r-md);
+  padding: 9px 11px;
+  margin-top: 8px;
+}
+.z-preq-title { font-size: 11px; font-weight: 500; color: var(--z-amber-tx); margin-bottom: 5px; }
+.z-preq-item { font-size: 10px; color: var(--z-amber-tx); padding: 2px 0; display: flex; align-items: center; gap: 5px; }
+.z-preq-item::before { content: '◦'; flex-shrink: 0; }
+
+/* ── Hard fact row ── */
+.z-hf-row {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 5px 0; border-bottom: 0.5px solid var(--z-border);
+  font-size: 11px;
+}
+.z-hf-row:last-child { border-bottom: none; }
+.z-hf-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+.z-hf-key { color: var(--z-text-3); min-width: 72px; flex-shrink: 0; }
+.z-hf-val { color: var(--z-text); font-weight: 500; flex: 1; line-height: 1.4; word-break: break-word; }
+.z-hf-conf { flex-shrink: 0; }
+/* confidence pips */
+.z-cf { display: flex; gap: 2px; }
+.z-cf-p { width: 6px; height: 6px; border-radius: 1px; background: var(--z-border); }
+.z-cf-p.hi { background: var(--z-teal); }
+.z-cf-p.md { background: var(--z-amber); }
+.z-cf-p.lo { background: var(--z-red); }
+
+/* ── Soft signal row ── */
+.z-ss-row {
+  display: flex; align-items: flex-start; gap: 7px;
+  padding: 4px 0; border-bottom: 0.5px solid var(--z-border);
+  font-size: 11px;
+}
+.z-ss-row:last-child { border-bottom: none; }
+.z-ss-key { color: var(--z-text-2); flex: 1; line-height: 1.4; }
+.z-ss-hint { font-size: 9px; color: var(--z-text-3); margin-top: 1px; }
+
+/* ── Ambiguity + gap rows ── */
+.z-amb-row {
+  display: flex; align-items: flex-start; gap: 6px;
+  padding: 4px 0; border-bottom: 0.5px solid var(--z-border);
+  font-size: 11px; color: var(--z-amber-tx); line-height: 1.4;
+}
+.z-amb-row:last-child { border-bottom: none; }
+.z-amb-row::before { content: '⚑'; flex-shrink: 0; font-size: 10px; margin-top: 1px; }
+.z-gap-row {
+  display: flex; align-items: flex-start; gap: 6px;
+  padding: 4px 0; border-bottom: 0.5px solid var(--z-border);
+  font-size: 11px; color: var(--z-text-3); line-height: 1.4;
+}
+.z-gap-row:last-child { border-bottom: none; }
+.z-gap-row::before { content: '?'; flex-shrink: 0; }
+
+/* ── Brief: baseline row ── */
+.z-bl-row {
+  display: flex; align-items: flex-start; gap: 7px;
+  padding: 5px 0; border-bottom: 0.5px solid var(--z-border); font-size: 11px;
+}
+.z-bl-row:last-child { border-bottom: none; }
+.z-bl-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+.z-bl-key { color: var(--z-text-3); min-width: 64px; flex-shrink: 0; }
+.z-bl-val { color: var(--z-amber); flex: 1; line-height: 1.4; }
+.z-bl-val.conf { color: var(--z-teal-tx); }
+/* stakeholder mini */
+.z-sh-row {
+  display: flex; align-items: center; gap: 7px;
+  padding: 5px 0; border-bottom: 0.5px solid var(--z-border);
+}
+.z-sh-row:last-child { border-bottom: none; }
+.z-sh-av {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--z-accent-bg); color: var(--z-accent-tx);
+  font-size: 7px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.z-sh-nm { font-size: 11px; font-weight: 500; color: var(--z-text); }
+.z-sh-role { font-size: 9px; color: var(--z-text-3); }
+.z-sh-auth { font-size: 8px; margin-left: auto; flex-shrink: 0; }
+/* open question */
+.z-oq-row {
+  display: flex; align-items: flex-start; gap: 6px;
+  padding: 4px 0; border-bottom: 0.5px solid var(--z-border); font-size: 11px;
+}
+.z-oq-row:last-child { border-bottom: none; }
+.z-oq-box { width: 13px; height: 13px; border-radius: 3px; border: 1.5px solid var(--z-border); flex-shrink: 0; margin-top: 1px; }
+.z-oq-q { flex: 1; color: var(--z-text-2); line-height: 1.4; }
+.z-oq-pri { font-size: 9px; flex-shrink: 0; }
+/* add signal link */
+.z-add-sig {
+  display: flex; align-items: center; gap: 5px;
+  padding: 6px 0; font-size: 11px; color: var(--z-text-3);
+  cursor: pointer; border-top: 0.5px solid var(--z-border); margin-top: 4px;
+  background: none; border-left: none; border-right: none; border-bottom: none;
+  font-family: inherit; width: 100; text-align: left;
+}
+.z-add-sig:hover { color: var(--z-accent-tx); }
+.z-add-sig svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; }
+
+/* ── No workspace fallback ── */
+.z-fallback {
+  background: var(--z-bg);
+  border: 1.5px dashed var(--z-border-s);
+  border-radius: var(--z-r-lg);
+  padding: 16px 14px;
+  text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.z-fallback-ico {
+  width: 36px; height: 36px; border-radius: var(--z-r-lg);
+  border: 0.5px solid var(--z-border);
+  display: flex; align-items: center; justify-content: center;
+}
+.z-fallback-ico svg { width: 18px; height: 18px; stroke: var(--z-text-3); fill: none; stroke-width: 1.5; stroke-linecap: round; }
+.z-fallback-t { font-size: 12px; font-weight: 500; color: var(--z-text-2); }
+.z-fallback-d { font-size: 11px; color: var(--z-text-3); line-height: 1.5; }
+.z-fallback-btns { display: flex; gap: 6px; width: 100%; }
+
+/* ── Draft zone ── */
+.z-draft-txt {
+  background: var(--z-bg);
+  border: 0.5px solid var(--z-border);
+  border-radius: var(--z-r-md);
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--z-text-2);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  cursor: text;
+  user-select: text;
+  word-break: break-word;
+}
+.z-draft-copy-btn {
+  width: 100%; padding: 8px;
+  background: var(--z-accent-bg); color: var(--z-accent-tx);
+  border: 0.5px solid var(--z-accent-bg);
+  border-radius: var(--z-r-md);
+  font-size: 11px; font-weight: 500; font-family: inherit;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: background var(--z-t), color var(--z-t);
+}
+.z-draft-copy-btn:hover { background: var(--z-accent); color: #fff; }
+.z-draft-copy-btn svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; }
+.z-send-note {
+  font-size: 9px; color: var(--z-text-3); text-align: center;
+  line-height: 1.5; padding: 0 4px;
+}
+/* auto-send section */
+.z-as-sec {
+  background: var(--z-bg);
+  border-radius: var(--z-r-md);
+  padding: 9px 11px;
+}
+.z-as-title { font-size: 10px; font-weight: 500; color: var(--z-text-2); margin-bottom: 7px; }
+.z-as-row {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 11px; color: var(--z-text-2); padding: 3px 0;
+}
+.z-never { margin-top: 7px; padding: 6px 9px; background: var(--z-red-bg); border-radius: var(--z-r-sm); font-size: 10px; color: var(--z-red-tx); line-height: 1.5; }
+/* calibration badge */
+.z-calib { display: flex; align-items: center; gap: 6px; padding: 5px 8px; background: var(--z-bg); border-radius: var(--z-r-md); margin-bottom: 8px; }
+.z-calib-lbl { font-size: 10px; color: var(--z-text-3); flex: 1; }
+/* no opp draft state */
+.z-qual-draft { background: var(--z-amber-bg); border-radius: var(--z-r-md); padding: 7px 10px; font-size: 11px; color: var(--z-amber-tx); line-height: 1.5; margin-bottom: 8px; }
+
+/* ── Activity rows ── */
+.z-act-row {
+  display: flex; gap: 8px; padding: 6px 0;
+  border-bottom: 0.5px solid var(--z-border); font-size: 11px;
+}
+.z-act-row:last-child { border-bottom: none; }
+.z-act-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+.z-act-type { font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; color: var(--z-text-3); margin-bottom: 1px; }
+.z-act-desc { color: var(--z-text-2); line-height: 1.4; }
+.z-act-meta { font-size: 10px; color: var(--z-text-3); margin-top: 1px; }
+.z-act-time { font-size: 10px; color: var(--z-text-3); flex-shrink: 0; white-space: nowrap; }
+/* toggle */
+.z-tog {
+  width: 30px; height: 17px; border-radius: 99px;
+  background: var(--z-border); cursor: pointer;
+  position: relative; transition: background .2s; flex-shrink: 0;
+}
+.z-tog.on { background: var(--z-teal); }
+.z-tog::after {
+  content: ''; position: absolute;
+  width: 13px; height: 13px; border-radius: 50%;
+  background: #fff; top: 2px; left: 2px;
+  transition: left .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+.z-tog.on::after { left: 15px; }
+
+/* ── Action strip ── */
+.z-actions {
+  padding: 9px 11px;
+  background: var(--z-surface);
+  border-top: 0.5px solid var(--z-border);
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.z-act-btn {
+  flex: 1; min-width: 0;
+  padding: 7px 8px;
+  font-size: 10px; font-weight: 500; font-family: inherit;
+  border-radius: var(--z-r-md); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  transition: background var(--z-t), color var(--z-t);
+  white-space: nowrap;
+}
+.z-act-btn svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; flex-shrink: 0; }
+.z-act-btn.create { background: var(--z-accent); color: #fff; border: none; }
+.z-act-btn.create:hover { background: var(--z-accent-h); }
+.z-act-btn.link   { background: var(--z-teal-bg); color: var(--z-teal-tx); border: 0.5px solid var(--z-teal-bg); }
+.z-act-btn.link:hover { background: var(--z-teal); color: #fff; }
+.z-act-btn.open   { background: var(--z-bg); color: var(--z-text-2); border: 0.5px solid var(--z-border); }
+.z-act-btn.open:hover { background: var(--z-surface); }
+.z-act-btn.upload { background: var(--z-bg); color: var(--z-text-2); border: 0.5px solid var(--z-border); }
+.z-act-btn.upload:hover { background: var(--z-surface); }
+
+/* ── XBadge shared ── */
+.xb {
+  display: inline-flex; align-items: center;
+  font-size: 9px; font-weight: 500; padding: 2px 6px;
+  border-radius: 3px; line-height: 1.4; white-space: nowrap;
+}
+.xb-conf { background: var(--z-teal-bg);   color: var(--z-teal-tx);  }
+.xb-prov { background: var(--z-amber-bg);  color: var(--z-amber-tx); }
+.xb-acc  { background: var(--z-accent-bg); color: var(--z-accent-tx);}
+.xb-red  { background: var(--z-red-bg);    color: var(--z-red-tx);   }
+.xb-neut { background: var(--z-bg); color: var(--z-text-3); border: 0.5px solid var(--z-border); }
+.z-btn {
+  font-size: 11px; padding: 5px 10px; border: 0.5px solid var(--z-border);
+  border-radius: var(--z-r-md); cursor: pointer; background: var(--z-surface);
+  color: var(--z-text-2); transition: background var(--z-t); display: inline-flex;
+  align-items: center; gap: 5px; font-family: inherit; white-space: nowrap;
+}
+.z-btn:hover { background: var(--z-bg); }
+.z-btn.pri { background: var(--z-accent); color: #fff; border-color: var(--z-accent); }
+.z-btn.pri:hover { background: var(--z-accent-h); }
+.z-btn.teal { background: var(--z-teal); color: #fff; border-color: var(--z-teal); }
+.z-btn.teal:hover { background: var(--z-teal-tx); }
+.z-btn svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; flex-shrink: 0; }
+
+/* ── Transcript overlay (within sidebar) ── */
+.z-overlay {
+  position: absolute; inset: 0;
+  background: var(--z-surface);
+  display: flex; flex-direction: column;
+  z-index: 50;
+  transform: translateY(100%);
+  transition: transform .22s ease;
+}
+.z-overlay.open { transform: translateY(0); }
+.z-ov-hdr {
+  padding: 11px 13px 9px;
+  border-bottom: 0.5px solid var(--z-border);
+  display: flex; align-items: flex-start; gap: 8px; flex-shrink: 0;
+}
+.z-ov-title { font-size: 13px; font-weight: 500; }
+.z-ov-sub { font-size: 10px; color: var(--z-text-3); margin-top: 2px; }
+.z-ov-body { flex: 1; overflow-y: auto; padding: 10px 13px; display: flex; flex-direction: column; gap: 7px; }
+.z-ov-upload {
+  border: 1.5px dashed var(--z-border-s); border-radius: var(--z-r-lg);
+  padding: 16px 12px; text-align: center; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  transition: border-color var(--z-t), background var(--z-t);
+}
+.z-ov-upload:hover { border-color: var(--z-accent); background: var(--z-accent-bg); }
+.z-ov-upload svg { width: 20px; height: 20px; stroke: var(--z-text-3); fill: none; stroke-width: 1.5; stroke-linecap: round; }
+.z-ov-upload:hover svg { stroke: var(--z-accent-tx); }
+.z-ov-upload-lbl { font-size: 11px; color: var(--z-text-3); line-height: 1.5; }
+.z-ov-upload:hover .z-ov-upload-lbl { color: var(--z-accent-tx); }
+.z-src-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.z-src-btn {
+  padding: 6px 8px; border: 0.5px solid var(--z-border); border-radius: var(--z-r-md);
+  background: var(--z-bg); font-size: 10px; color: var(--z-text-2); cursor: pointer;
+  display: flex; align-items: center; gap: 6px; font-family: inherit;
+  transition: background var(--z-t);
+}
+.z-src-btn:hover { background: var(--z-surface); }
+.z-src-btn svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; flex-shrink: 0; }
+/* extracted item */
+.z-ex {
+  border: 0.5px solid var(--z-border); border-radius: var(--z-r-md); overflow: hidden;
+}
+.z-ex.cfm { border-color: var(--z-teal); }
+.z-ex.prv { border-color: var(--z-amber); }
+.z-ex.prk { border-color: var(--z-border-s); }
+.z-ex.nse { opacity: .5; }
+.z-ex-hd  {
+  padding: 5px 10px; display: flex; align-items: center; gap: 7px;
+  font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: .04em;
+}
+.z-ex.cfm .z-ex-hd { background: var(--z-teal-bg);  color: var(--z-teal-tx);  }
+.z-ex.prv .z-ex-hd { background: var(--z-amber-bg); color: var(--z-amber-tx); }
+.z-ex.prk .z-ex-hd { background: var(--z-bg);       color: var(--z-text-3);   }
+.z-ex.nse .z-ex-hd { background: var(--z-bg);       color: var(--z-text-3);   }
+.z-ex-cat { flex: 1; }
+.z-ex-body { padding: 6px 10px; font-size: 11px; color: var(--z-text); line-height: 1.5; }
+.z-ex-key  { font-weight: 500; margin-bottom: 2px; }
+.z-ex-orig { font-size: 10px; color: var(--z-text-3); font-style: italic; margin-top: 2px; }
+.z-ex-acts { padding: 5px 10px; border-top: 0.5px solid var(--z-border); display: flex; align-items: center; gap: 5px; }
+.z-ov-foot {
+  padding: 9px 13px; border-top: 0.5px solid var(--z-border);
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.z-ov-note { font-size: 10px; color: var(--z-text-3); flex: 1; padding-right: 8px; }
+
+/* ── Toast ── */
+.z-toasts {
+  position: absolute; bottom: 56px; left: 10px; right: 10px;
+  z-index: 100; display: flex; flex-direction: column; gap: 5px;
+  pointer-events: none;
+}
+.z-toast {
+  background: var(--z-surface); border: 0.5px solid var(--z-border);
+  border-radius: var(--z-r-lg); padding: 9px 12px;
+  display: flex; align-items: flex-start; gap: 8px;
+  box-shadow: 0 3px 12px rgba(0,0,0,.10); pointer-events: all;
+  font-size: 11px;
+}
+.z-toast-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; }
+
+/* ── Thread switcher (demo UI top of gmail) ── */
+.thread-switcher {
+  padding: 8px 20px 0;
+  background: #fff;
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.ts-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+  border-radius: 99px;
+  cursor: pointer;
+  border: 1px solid #dadce0;
+  background: #fff;
+  color: #5f6368;
+  font-family: inherit;
+  transition: background .12s;
+}
+.ts-btn:hover { background: #f1f3f4; }
+.ts-btn.on { background: #e8f0fe; color: #1a73e8; border-color: #e8f0fe; font-weight: 500; }
+</style>
+<style>
+/* ── Sidebar fills full viewport when hosted standalone ── */
+html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
+.z-sidebar { width: 100%; height: 100vh; }
+</style>
+</head>
+<body>
+
+<div class="z-sidebar" id="z-sidebar">
+
+        <!-- Shell: header -->
+        <div class="z-shell-hdr">
+          <div class="z-wordmark">
+            <div class="z-wordmark-logo">
+              <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div>
+              <div class="z-wordmark-name">Zotra</div>
+              <div class="z-account-name" id="z-account-name">priya@yourcompany.com</div>
+            </div>
+          </div>
+          <div class="z-conn-dot" id="z-conn-dot" data-tip="Connected · last sync 2 min ago"></div>
+          <button class="z-open-btn" id="z-open-btn">
+            Open in Zotra
+            <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </button>
+        </div>
+
+        <!-- Shell: tabs -->
+        <div class="z-tabs" id="z-tabs">
+          <button class="z-tab on" data-zone="signal">Signal<span class="z-tab-badge" id="badge-signal" style="display:none;"></span></button>
+          <button class="z-tab" data-zone="brief">Brief</button>
+          <button class="z-tab" data-zone="draft">Draft</button>
+          <button class="z-tab" data-zone="activity">Activity</button>
+        </div>
+
+        <!-- Scrollable content -->
+        <div class="z-content" id="z-content">
+          <!-- zones injected by JS -->
+        </div>
+
+        <!-- Action strip -->
+        <div class="z-actions" id="z-actions">
+          <!-- rendered by JS -->
+        </div>
+
+        <!-- Transcript overlay -->
+        <div class="z-overlay" id="z-overlay">
+          <div class="z-ov-hdr">
+            <div style="flex:1;min-width:0;">
+              <div class="z-ov-title">Post-call transcript</div>
+              <div class="z-ov-sub" id="z-ov-sub">Upload to extract and review confirmable facts</div>
+            </div>
+            <button class="z-btn" id="z-ov-close" style="padding:3px 6px;font-size:10px;">✕ Close</button>
+          </div>
+          <div class="z-ov-body" id="z-ov-body">
+            <div class="z-ov-upload" id="z-ov-upz" onclick="zotra.simulateUpload()">
+              <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <div class="z-ov-upload-lbl">Drop transcript file<br>or click to browse</div>
+            </div>
+            <div class="z-src-btns">
+              <button class="z-src-btn" onclick="zotra.simulateUpload()"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/></svg>Zoom</button>
+              <button class="z-src-btn" onclick="zotra.simulateUpload()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/></svg>Meet</button>
+              <button class="z-src-btn" onclick="zotra.simulateUpload()"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Otter.ai</button>
+              <button class="z-src-btn" onclick="zotra.simulateUpload()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>Manual</button>
+            </div>
+            <div id="z-extract-items" style="display:none;"></div>
+          </div>
+          <div class="z-ov-foot">
+            <span class="z-ov-note" id="z-ov-note">0 items confirmed</span>
+            <div style="display:flex;gap:6px;">
+              <button class="z-btn" id="z-ov-followup" style="display:none;font-size:10px;padding:4px 8px;">Gen. follow-up</button>
+              <button class="z-btn teal" id="z-ov-save" style="display:none;font-size:10px;padding:4px 8px;">✓ Save to baselines</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Toasts -->
+        <div class="z-toasts" id="z-toasts"></div>
+      </div>
+    </div>
+
+</body>
+<script>
+$(function() {
+
+/* ═══════════════════════════════════════════════════════════
+   ZOTRA EMAIL ADD-IN
+   Self-contained jQuery app. Simulates activation on email open.
+   Width: 380px sidebar within Gmail chrome mockup.
+═══════════════════════════════════════════════════════════ */
+
+/* ── CONSTANTS ── */
+var AUTH = {
+  decision_maker:'Decision maker', decision_influencer:'Influencer',
+  budget_authority:'Budget authority', scope_owner:'Scope owner',
+  signatory:'Signatory', influencer:'Influencer', internal:'Internal'
+};
+var OBJ_FAMILY_COLOR = {acquisition:'#534AB7',expansion:'#1D9E75',retention:'#639922',recovery:'#E24B4A'};
+
+/* ── THREAD DATA ── */
+var THREADS = [
+
+  /* ── Thread 1: ABC Technologies (pre-qualification, new contact) ── */
+  {
+    id: 't1',
+    sender: 'Arjun Mehta',
+    senderIni: 'AM',
+    senderColor: '#4285F4',
+    company: 'ABC Technologies',
+    subject: 'Re: Website redesign proposal',
+    snippet: 'Raj is available Thursday or Friday…',
+    time: '2h',
+    unread: true,
+    linked: false,
+    workspaceId: null,
+    /* Gmail email cards */
+    emails: [
+      { from:'Arjun Mehta', ini:'AM', color:'#4285F4', time:'Today, 10:22 AM',
+        body:'Hi Priya, thanks for the intro call. We\'re looking at a full redesign — ideally completed by <strong>September</strong>. Budget-wise, thinking around <strong>₹6 lakhs</strong>, though flexible. Let me know if you\'d like to schedule a briefing with our <strong>CTO Raj</strong>.' },
+      { from:'Priya K (you)', ini:'PK', color:'#534AB7', time:'Today, 11:05 AM',
+        body:'Hi Arjun, great to connect! A September deadline and ₹6L is very workable. Can we schedule a call with Raj next week?' },
+      { from:'Arjun Mehta', ini:'AM', color:'#4285F4', time:'Today, 2:14 PM',
+        body:'Raj is available Thursday or Friday. He\'ll want to discuss the <strong>CMS migration</strong> as part of scope. We may also need <strong>ongoing maintenance — around ₹40k/month</strong>. Thursday 3 PM IST?' }
+    ],
+    /* Signal zone */
+    classification: 'pre_qualification',
+    ff: { artha: 62, laya: null, rasa: 0, kriya: 0, gati: 45 },
+    ffExchangeCount: 2,
+    preQual: true,
+    preQualMissing: ['Budget authority (Raj) unconfirmed', 'Decision timeline unknown', 'Acceptance criteria undefined'],
+    hardFacts: [
+      { key:'Budget',     val:'₹6L',              conf: 2, status:'prov' },
+      { key:'Timeline',   val:'September 2026',    conf: 2, status:'prov' },
+      { key:'Scope',      val:'Redesign + CMS',    conf: 3, status:'prov' },
+      { key:'Stakeholder',val:'CTO Raj',           conf: 2, status:'prov' }
+    ],
+    softSignals: [
+      { key:'Decision-maker authority', hint:'Raj holds budget — not yet engaged', conf: 3 },
+      { key:'Budget approval stage',    hint:'Provisional — not board-approved',   conf: 2 },
+      { key:'Urgency',                  hint:'September implies moderate urgency', conf: 2 },
+      { key:'Sector',                   hint:'Professional services / agency',      conf: 3 },
+      { key:'Org size',                 hint:'50–200 employees (estimate)',         conf: 1 }
+    ],
+    ambiguity: [
+      '₹6L may exclude CMS migration or maintenance — scope not separated',
+      'CTO Raj not yet directly engaged — authority entirely unconfirmed'
+    ],
+    gaps: [
+      'Decision timeline — when does Raj need to decide?',
+      'Existing CMS system identity',
+      'Whether ₹6L includes maintenance retainer'
+    ],
+    /* Brief zone */
+    brief: {
+      linked: false,
+      provisionals: [
+        { key:'Primary goal',  val:'Redesign + CMS migration', conf:'prov' },
+        { key:'Budget',        val:'₹6L (may exclude maintenance)', conf:'prov' },
+        { key:'Deadline',      val:'September 2026', conf:'prov' },
+        { key:'CMS direction', val:'Webflow-style (stated, unconfirmed)', conf:'prov' },
+        { key:'Retainer',      val:'₹40k/mo — parked, not scoped', conf:'prov' }
+      ],
+      stakeholders: [
+        { ini:'AM', name:'Arjun Mehta', role:'Primary contact', auth:'influencer',    engaged: true },
+        { ini:'RJ', name:'Raj (CTO)',   role:'Decision-maker',  auth:'decision_maker',engaged: false }
+      ],
+      openQ: [
+        { q:'Is Raj the budget authority?',              priority:'high' },
+        { q:'Has budget been board-approved?',           priority:'high' },
+        { q:'Is ₹6L all-in including maintenance?',     priority:'medium' },
+        { q:'What CMS system is currently in place?',   priority:'low' }
+      ]
+    },
+    /* Draft zone */
+    draft: {
+      calibration: 'Pre-qual mode — qualification questions, not proposal',
+      draftType: 'qual',
+      text: 'Hi Arjun,\n\nThanks for the detail — a September deadline and ₹6L budget is a solid starting point.\n\nBefore we go further, it would help to connect briefly with Raj to understand the full scope. A 30-minute call is all we need. Could you suggest a time that works for him?\n\nAlso — could you confirm whether the ₹6L covers the full project including CMS migration, or is maintenance on top?\n\nLooking forward to Thursday or Friday.\n\nBest,'
+    },
+    /* Activity */
+    activity: [
+      { dot:'accent', type:'signal_extraction', desc:'4 signals extracted: budget, timeline, scope, stakeholder.', meta:'Email 3 · 2h ago', time:'2h ago' },
+      { dot:'amber',  type:'pre_qualification', desc:'pre_qualification triggered — fewer than 3 forces scoreable at ≥0.50 confidence.', meta:'Auto · 2h ago', time:'2h ago' },
+      { dot:'accent', type:'opp_suggested',     desc:'Opportunity suggestion queued: new_logo / acquisition.', meta:'Orchestrator · 2h ago', time:'2h ago' }
+    ],
+    opp: {
+      obj:'new_logo', fam:'acquisition', motion:'thread',
+      reason:'Budget, timeline, scope, and stakeholder signals detected. pre_qualification active — minimum info required.'
+    }
+  },
+
+  /* ── Thread 2: TechNova (linked workspace, renewal) ── */
+  {
+    id: 't2',
+    sender: 'Rahul Kumar',
+    senderIni: 'RK',
+    senderColor: '#34A853',
+    company: 'TechNova Ltd',
+    subject: 'Contract renewal discussion — FY2026–27',
+    snippet: 'Happy with Phase 3. Ready to start renewal discussions…',
+    time: '2d',
+    unread: false,
+    linked: true,
+    workspaceId: 'ws-tn-1',
+    workspaceName: 'TechNova Ltd',
+    emails: [
+      { from:'Rahul Kumar', ini:'RK', color:'#34A853', time:'2 days ago, 11:30 AM',
+        body:'Hi Priya, our <strong>current contract expires June 30th</strong> and we\'d like to start renewal discussions. We\'re happy with the work so far. Also exploring <strong>mobile app development</strong> — budget likely in the <strong>₹18L/year range</strong>.' }
+    ],
+    classification: 'commercial',
+    ff: { artha: 88, laya: 65, rasa: 91, kriya: 78, gati: 54 },
+    ffExchangeCount: 8,
+    preQual: false,
+    preQualMissing: [],
+    hardFacts: [
+      { key:'Contract end', val:'June 30, 2026',    conf: 3, status:'conf' },
+      { key:'Renewal value',val:'₹18L/yr (est.)',   conf: 2, status:'prov' },
+      { key:'New scope',    val:'Mobile app',        conf: 2, status:'prov' },
+      { key:'Stakeholder',  val:'Rahul Kumar (VP)',  conf: 3, status:'conf' }
+    ],
+    softSignals: [
+      { key:'Renewal intent',   hint:'Explicit renewal request — strong positive signal', conf: 3 },
+      { key:'Expansion signal', hint:'Mobile app scope add mentioned informally',          conf: 2 },
+      { key:'Rasa signal',      hint:'Very warm tone — relationship strong (Rasa 91)',     conf: 3 },
+      { key:'Urgency',          hint:'June 30 expiry creates natural deadline',            conf: 3 }
+    ],
+    ambiguity: ['Mobile app budget not discussed — could expand total significantly'],
+    gaps: ['Final renewal value', 'Pricing model (fixed vs T&M)', 'CFO Priya Verma engagement'],
+    brief: {
+      linked: true,
+      provisionals: [
+        { key:'Renewal start', val:'July 1, 2026',           conf:'conf' },
+        { key:'Renewal value', val:'₹22–24L/yr (range)',     conf:'prov' },
+        { key:'Pricing model', val:'TBD — parked',           conf:'prov' },
+        { key:'Mobile scope',  val:'React Native iOS & Android', conf:'prov' }
+      ],
+      stakeholders: [
+        { ini:'RK', name:'Rahul Kumar',   role:'VP Engineering', auth:'decision_influencer', engaged: true },
+        { ini:'PV', name:'Priya Verma',   role:'CFO',            auth:'budget_authority',    engaged: false }
+      ],
+      openQ: [
+        { q:'What is the final renewal value?',            priority:'high' },
+        { q:'Has CFO Priya Verma been briefed?',           priority:'high' },
+        { q:'Is React Native mobile in renewal or addendum?', priority:'medium' }
+      ]
+    },
+    draft: {
+      calibration: 'Rasa 91 — warm, direct tone. Confident in advancing.',
+      draftType: 'proposal',
+      text: 'Hi Rahul,\n\nThank you — it\'s been a great year and Phase 3 really landed well.\n\nI\'d love to get the renewal moving. Can we schedule a call this week? I have a proposal framework ready and I\'d like to walk through the mobile app scope at the same time to see if we can include both in the renewal terms.\n\nWednesday or Thursday afternoon works well for me — just say the word.\n\nBest,'
+    },
+    activity: [
+      { dot:'teal',  type:'micro_agreement',   desc:'scope.renewal_start = "July 1, 2026" confirmed.', meta:'BD thread · Rahul K', time:'2d ago' },
+      { dot:'accent',type:'draft_generated',   desc:'Draft generated — calibrated to Rasa 91 (warm, direct).', meta:'Email assistant', time:'2d ago' },
+      { dot:'accent',type:'ff_change',         desc:'Rasa: 88 → 91 (+3). Gati: 57 → 54 (−3).', meta:'Five Forces', time:'3d ago' },
+      { dot:'accent',type:'signal_extraction', desc:'Renewal intent + contract expiry extracted.', meta:'Email 1', time:'2d ago' },
+      { dot:'teal',  type:'auto_sent',         desc:'Portal reminder sent: proposal review pending.', meta:'Auto-send · eligible action', time:'5d ago' }
+    ],
+    opp: null
+  },
+
+  /* ── Thread 3: Nexgen (commercial, no workspace yet) ── */
+  {
+    id: 't3',
+    sender: 'Priya Nair',
+    senderIni: 'PN',
+    senderColor: '#EA4335',
+    company: 'Nexgen Analytics',
+    subject: 'Budget approval — Q3 engagement',
+    snippet: 'Board approved ₹12L. Need proposal by end of week…',
+    time: '4h',
+    unread: true,
+    linked: false,
+    workspaceId: null,
+    emails: [
+      { from:'Priya Nair', ini:'PN', color:'#EA4335', time:'Today, 8:00 AM',
+        body:'Hi, we\'ve finalised the <strong>Q3 budget at ₹12 lakhs</strong> for the analytics engagement. The board approved it yesterday. We need to move quickly — can you share a proposal by end of week? We\'re also <strong>evaluating one other vendor</strong> so timing matters.' }
+    ],
+    classification: 'commercial',
+    ff: { artha: 55, laya: null, rasa: 0, kriya: 0, gati: 70 },
+    ffExchangeCount: 1,
+    preQual: false,
+    preQualMissing: [],
+    hardFacts: [
+      { key:'Budget',      val:'₹12L (board-approved)', conf: 3, status:'conf' },
+      { key:'Quarter',     val:'Q3 2026',               conf: 3, status:'prov' },
+      { key:'Competitive', val:'One other vendor',       conf: 2, status:'prov' },
+      { key:'Stakeholder', val:'Priya Nair (Director)',  conf: 3, status:'conf' }
+    ],
+    softSignals: [
+      { key:'Budget approval stage', hint:'Board-approved — strong commitment signal', conf: 3 },
+      { key:'Urgency',               hint:'Competing vendor creates timeline pressure', conf: 3 },
+      { key:'Decision-maker auth.',  hint:'Director — likely has sign-off authority',  conf: 2 },
+      { key:'Sector',                hint:'Analytics / data platform',                  conf: 3 }
+    ],
+    ambiguity: ['Analytics scope undefined — BI, data engineering, or AI/ML?'],
+    gaps: [
+      'Analytics scope type (BI / data eng. / AI-ML)',
+      'Technical stack and existing infrastructure',
+      'Q3 delivery timeline detail'
+    ],
+    brief: {
+      linked: false,
+      provisionals: [
+        { key:'Budget',     val:'₹12L (board-approved)', conf:'conf' },
+        { key:'Quarter',    val:'Q3 2026',               conf:'prov' },
+        { key:'Scope',      val:'Analytics platform — TBD', conf:'prov' },
+        { key:'Competitive',val:'One other vendor',       conf:'prov' }
+      ],
+      stakeholders: [
+        { ini:'PN', name:'Priya Nair', role:'Director', auth:'decision_maker', engaged: true }
+      ],
+      openQ: [
+        { q:'Analytics scope: BI, data engineering, or AI/ML?', priority:'high' },
+        { q:'Who is the other vendor?',                         priority:'high' },
+        { q:'What is the technical stack?',                     priority:'medium' }
+      ]
+    },
+    draft: {
+      calibration: 'High Gati (70) — move fast. Board-approved budget. Qualify scope before proposing.',
+      draftType: 'qual',
+      text: 'Hi Priya,\n\nGreat to hear — a board-approved Q3 budget is a strong starting point and I\'d like to help you move quickly.\n\nOne quick question before I build the proposal: when you say "analytics engagement", are you thinking BI/reporting, data engineering/pipelines, or something more on the AI/ML side? Each has quite different scope and team requirements.\n\nI can have something to you by Thursday if you can give me that steer today. Happy to jump on a 15-minute call instead.\n\nBest,'
+    },
+    activity: [
+      { dot:'teal',  type:'signal_extraction', desc:'Budget confirmed: ₹12L board-approved.', meta:'Email 1', time:'4h ago' },
+      { dot:'accent',type:'opp_suggested',     desc:'Opportunity suggested: new_logo — Gati 70, move fast.', meta:'Orchestrator · 4h ago', time:'4h ago' },
+      { dot:'accent',type:'ff_change',         desc:'Gati scored 70 from board-approval + urgency signals.', meta:'Five Forces', time:'4h ago' }
+    ],
+    opp: {
+      obj:'new_logo', fam:'acquisition', motion:'thread',
+      reason:'Board-approved budget (high confidence). Competing vendor creates urgency. Gati 70 — open BD Thread immediately.'
+    }
+  }
+];
+
+/* ── EXTRACT ITEMS (transcript demo) ── */
+var EXTRACT_ITEMS = [
+  { id:'x1', cat:'confirmable', key:'Renewal value', val:'₹22L/yr confirmed in call', orig:'"we\'re thinking ₹22 lakhs — that\'s our budget"' },
+  { id:'x2', cat:'confirmable', key:'React Native scope', val:'iOS and Android both in scope', orig:'"yes, both platforms — React Native preferred"' },
+  { id:'x3', cat:'provisional', key:'Timeline preference', val:'July 1 start preferred, not confirmed', orig:'"July would be ideal, right after the contract ends"' },
+  { id:'x4', cat:'provisional', key:'Pricing model', val:'CEO open to fixed but wants T&M option', orig:'"I\'d like to understand both models before deciding"' },
+  { id:'x5', cat:'parking',     key:'App launch date', val:'August 2026 app store — raised, not in scope', orig:'"we\'re aiming for the app store by August"' },
+  { id:'x6', cat:'noise',       key:'Office move', val:'Relocating offices in Q3 — not relevant', orig:'"we\'re moving offices in Q3 so timing matters"' }
+];
+var itemStates = {};
+
+/* ── STATE ── */
+var S = { threadId: null, zone: 'signal' };
+
+/* ── UTILS ── */
+function ffc(v) { return v >= 75 ? 'var(--z-teal)' : v >= 50 ? 'var(--z-amber)' : 'var(--z-red)'; }
+function ffBand(v) { return v >= 75 ? 'Strong' : v >= 50 ? 'Caution' : 'Weak'; }
+function ffBandCls(v) { return v >= 75 ? 'band-strong' : v >= 50 ? 'band-caution' : 'band-weak'; }
+function priColor(p) { return p === 'high' ? 'var(--z-red-tx)' : p === 'medium' ? 'var(--z-amber-tx)' : 'var(--z-text-3)'; }
+function adotC(d) { return { teal:'var(--z-teal)', amber:'var(--z-amber)', accent:'var(--z-accent)', red:'var(--z-red)' }[d] || 'var(--z-text-3)'; }
+function actTypeLbl(t) { return { signal_extraction:'Signal extracted', opp_suggested:'Opp. suggested', ff_change:'FF change', draft_generated:'Draft generated', auto_sent:'Auto-sent', micro_agreement:'Micro-agreement', pre_qualification:'Pre-qualification' }[t] || t; }
+function confPips(n, total, lvl) {
+  var h = '<div class="z-cf">';
+  for (var i = 0; i < total; i++) {
+    var on = i < n;
+    var cls = on ? (n === 3 ? 'hi' : n === 2 ? 'md' : 'lo') : '';
+    h += '<div class="z-cf-p ' + cls + '"></div>';
+  }
+  return h + '</div>';
+}
+
+function ztoast(type, title, body) {
+  var c = { success:'var(--z-teal)', warning:'var(--z-amber)', danger:'var(--z-red)', info:'var(--z-accent)' }[type] || 'var(--z-accent)';
+  var $t = $('<div class="z-toast">');
+  $t.html('<div class="z-toast-dot" style="background:' + c + ';"></div>' +
+    '<div style="flex:1;"><div style="font-size:11px;font-weight:500;color:var(--z-text);">' + title + '</div>' +
+    (body ? '<div style="font-size:10px;color:var(--z-text-2);margin-top:1px;line-height:1.4;">' + body + '</div>' : '') +
+    '</div><button style="background:none;border:none;cursor:pointer;color:var(--z-text-3);font-size:12px;padding:0;flex-shrink:0;" onclick="$(this).closest(\'.z-toast\').remove()">✕</button>');
+  $('#z-toasts').append($t);
+  setTimeout(function () { $t.fadeOut(300, function () { $t.remove(); }); }, 3800);
+}
+
+function currentThread() {
+  return THREADS.find(function (t) { return t.id === S.threadId; });
+}
+
+/* ─────────────────────────────────────────────────
+   GMAIL CHROME RENDER
+───────────────────────────────────────────────── */
+function renderGmailList() {
+  var $list = $('#gmail-list-items');
+  if (!$list.length) return;
+  $list.empty();
+  THREADS.forEach(function (t) {
+    var $row = $('<div class="gmail-email-row' + (t.unread ? ' unread' : '') + (S.threadId === t.id ? ' active' : '') + '" data-id="' + t.id + '">');
+    $row.html(
+      '<div class="gmail-er-av" style="background:' + t.senderColor + ';">' + t.senderIni + '</div>' +
+      '<div class="gmail-er-body">' +
+        '<div class="gmail-er-r1">' +
+          '<div class="gmail-er-sender">' + t.sender + '</div>' +
+          '<div class="gmail-er-time">' + t.time + '</div>' +
+        '</div>' +
+        '<div class="gmail-er-subj">' + t.subject + '</div>' +
+        '<div class="gmail-er-snip">' + t.snippet + '</div>' +
+      '</div>'
+    );
+    $row.on('click', function () { activateThread(t.id); });
+    $list.append($row);
+  });
+}
+
+function renderGmailView(t) {
+  if (!$('#gmail-subject').length) return;
+  $('#gmail-subject').text(t.subject);
+  $('#gmail-meta').html(
+    '<span>' + t.sender + '</span>' +
+    '<span>to me</span>' +
+    (t.linked ? '<span class="xb xb-conf" style="font-size:9px;">✓ Workspace linked</span>' : '')
+  );
+  var $body = $('#gmail-body').empty();
+  t.emails.forEach(function (e) {
+    var $card = $('<div class="gmail-email-card">');
+    $card.html(
+      '<div class="gmail-ec-hdr">' +
+        '<div class="gmail-ec-av" style="background:' + e.color + ';">' + e.ini + '</div>' +
+        '<span class="gmail-ec-name">' + e.from + '</span>' +
+        '<span class="gmail-ec-time">' + e.time + '</span>' +
+      '</div>' +
+      '<div class="gmail-ec-body">' + e.body + '</div>'
+    );
+    $body.append($card);
+  });
+  /* thread switcher */
+  var $sw = $('#thread-switcher').empty();
+  THREADS.forEach(function (t2) {
+    var $b = $('<button class="ts-btn' + (S.threadId === t2.id ? ' on' : '') + '">' + t2.company + '</button>');
+    $b.on('click', function () { activateThread(t2.id); });
+    $sw.append($b);
+  });
+}
+
+/* ─────────────────────────────────────────────────
+   ACTIVATE THREAD (main entry point)
+───────────────────────────────────────────────── */
+function activateThread(id) {
+  S.threadId = id;
+  S.zone = 'signal';
+  var t = currentThread();
+  t.unread = false;
+  /* update gmail chrome */
+  renderGmailList();
+  renderGmailView(t);
+  /* update sidebar */
+  setTab('signal');
+  renderActionStrip(t);
+  /* update signal badge */
+  var sigCount = t.hardFacts.length;
+  if (sigCount > 0) {
+    $('#badge-signal').text(sigCount).show();
+  } else {
+    $('#badge-signal').hide();
+  }
+  /* update Open in Zotra link */
+  var dest = t.linked ? 'Workspace: ' + (t.workspaceName || t.company) : 'Opportunity: ' + t.company;
+  $('#z-open-btn').attr('title', 'Open ' + dest + ' in Zotra');
+}
+
+/* ─────────────────────────────────────────────────
+   TAB SWITCHING
+───────────────────────────────────────────────── */
+$('#z-tabs').on('click', '.z-tab', function () {
+  var zone = $(this).data('zone');
+  setTab(zone);
+});
+
+function setTab(zone) {
+  S.zone = zone;
+  $('.z-tab').removeClass('on');
+  $('.z-tab[data-zone="' + zone + '"]').addClass('on');
+  renderZone(zone);
+}
+
+function renderZone(zone) {
+  var t = currentThread();
+  if (!t) {
+    $('#z-content').html('<div style="padding:24px;text-align:center;color:var(--z-text-3);font-size:11px;line-height:1.6;">Open an email thread to see extracted signals and intelligence.</div>');
+    return;
+  }
+  var $c = $('#z-content').empty();
+  if (zone === 'signal')   renderSignalZone(t, $c);
+  if (zone === 'brief')    renderBriefZone(t, $c);
+  if (zone === 'draft')    renderDraftZone(t, $c);
+  if (zone === 'activity') renderActivityZone(t, $c);
+}
+
+/* ─────────────────────────────────────────────────
+   SIGNAL ZONE
+───────────────────────────────────────────────── */
+function renderSignalZone(t, $c) {
+  /* provisional notice */
+  $c.append(
+    '<div class="z-prov-notice">' +
+      '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+      'All fields provisional — none confirmed, none written to baselines.' +
+    '</div>'
+  );
+
+  /* classification */
+  var clsMap = {
+    commercial:      { cls:'z-cls-commercial', dot:'var(--z-accent)', label:'Commercial' },
+    pre_qualification:{ cls:'z-cls-preq',      dot:'var(--z-amber)',  label:'◌ Pre-qualification' },
+    not_commercial:  { cls:'z-cls-not',        dot:'var(--z-border-s)',label:'Not commercial' }
+  };
+  var cm = clsMap[t.classification] || clsMap.not_commercial;
+  var $clsSec = secEl('Classification');
+  $clsSec.find('.z-sec-lbl').hide();
+  $clsSec.find('div:last').html(
+    '<div class="z-cls ' + cm.cls + '">' +
+      '<div class="z-cls-dot" style="background:' + cm.dot + ';"></div>' + cm.label +
+    '</div>'
+  );
+  $c.append($clsSec);
+
+  /* Five Forces mini */
+  var $ffSec = secEl('Five Forces');
+  var forces = [
+    { k:'artha', l:'Artha', sub:'Value' },
+    { k:'rasa',  l:'Rasa',  sub:'Relationship' },
+    { k:'gati',  l:'Gati',  sub:'Momentum' },
+    { k:'kriya', l:'Kriya', sub:'Execution' },
+    { k:'laya',  l:'Laya',  sub:'Rhythm' }
+  ];
+  var $ffGrid = $('<div class="z-ff-grid">');
+  forces.forEach(function (f) {
+    var v = t.ff[f.k];
+    var $cell = $('<div class="z-ff-cell">');
+    if (f.k === 'laya' && v === null) {
+      $cell.html(
+        '<div class="z-ff-nm">' + f.l + ' <span class="band band-null" title="Laya requires minimum 2 email exchanges to score — insufficient data at first contact">null</span></div>' +
+        '<div class="z-ff-bar-w"><div class="z-ff-bar-f" style="width:0%;"></div></div>' +
+        '<div class="z-ff-score" style="color:var(--z-text-3);">—</div>'
+      );
+    } else if (!v && v !== 0) {
+      $cell.html('<div class="z-ff-nm">' + f.l + '</div><div class="z-ff-bar-w"></div><div class="z-ff-score" style="color:var(--z-text-3);">—</div>');
+    } else {
+      var vc = ffc(v);
+      $cell.html(
+        '<div class="z-ff-nm">' + f.l + ' <span class="band ' + ffBandCls(v) + '">' + ffBand(v) + '</span></div>' +
+        '<div class="z-ff-bar-w"><div class="z-ff-bar-f" style="width:' + v + '%;background:' + vc + ';"></div></div>' +
+        '<div class="z-ff-score" style="color:' + vc + ';">' + v + '</div>'
+      );
+    }
+    $ffGrid.append($cell);
+  });
+  $ffSec.find('div:last').append($ffGrid);
+  /* pre-qual block */
+  if (t.preQual) {
+    var $pq = $('<div class="z-preq-block">');
+    $pq.html('<div class="z-preq-title">◌ Pre-qualification — fewer than 3 forces scoreable at ≥0.50 confidence</div>' +
+      t.preQualMissing.map(function (m) { return '<div class="z-preq-item">' + m + '</div>'; }).join(''));
+    $ffSec.find('div:last').append($pq);
+  }
+  $c.append($ffSec);
+
+  /* Hard facts */
+  if (t.hardFacts.length) {
+    var $hf = secEl('Hard facts');
+    var $rows = $('<div>');
+    t.hardFacts.forEach(function (f) {
+      var dc = f.status === 'conf' ? 'var(--z-teal)' : 'var(--z-amber)';
+      var badge = f.status === 'conf'
+        ? '<span class="xb xb-conf" style="font-size:8px;">✓</span>'
+        : '<span class="xb xb-prov" style="font-size:8px;">◌</span>';
+      $rows.append(
+        '<div class="z-hf-row">' +
+          '<div class="z-hf-dot" style="background:' + dc + ';"></div>' +
+          '<span class="z-hf-key">' + f.key + '</span>' +
+          '<span class="z-hf-val">' + f.val + '</span>' +
+          '<div class="z-hf-conf">' + confPips(f.conf, 3) + '</div>' +
+          badge +
+        '</div>'
+      );
+    });
+    $hf.find('div:last').append($rows);
+    $c.append($hf);
+  }
+
+  /* Soft signals */
+  if (t.softSignals.length) {
+    var $ss = secEl('Soft signals');
+    var $ssRows = $('<div>');
+    t.softSignals.forEach(function (s) {
+      $ssRows.append(
+        '<div class="z-ss-row">' +
+          '<div style="flex:1;min-width:0;"><div class="z-ss-key">' + s.key + '</div><div class="z-ss-hint">' + s.hint + '</div></div>' +
+          confPips(s.conf, 3) +
+        '</div>'
+      );
+    });
+    $ss.find('div:last').append($ssRows);
+    $c.append($ss);
+  }
+
+  /* Ambiguity flags */
+  if (t.ambiguity.length) {
+    var $af = secEl('Ambiguity flags');
+    $af.find('div:last').html(t.ambiguity.map(function (a) { return '<div class="z-amb-row">' + a + '</div>'; }).join(''));
+    $c.append($af);
+  }
+
+  /* Gaps */
+  if (t.gaps.length) {
+    var $gp = secEl('Gaps — open questions');
+    $gp.find('div:last').html(t.gaps.map(function (g) { return '<div class="z-gap-row">' + g + '</div>'; }).join(''));
+    $c.append($gp);
+  }
+}
+
+/* ─────────────────────────────────────────────────
+   BRIEF ZONE
+───────────────────────────────────────────────── */
+function renderBriefZone(t, $c) {
+  var b = t.brief;
+
+  /* no-workspace fallback */
+  if (!b.linked) {
+    $c.append(
+      '<div class="z-sec">' +
+        '<div class="z-fallback">' +
+          '<div class="z-fallback-ico"><svg viewBox="0 0 24 24" fill="none" stroke="var(--z-text-3)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>' +
+          '<div class="z-fallback-t">No workspace linked</div>' +
+          '<div class="z-fallback-d">Link this thread to an existing workspace or create a new opportunity to see the full Brief.</div>' +
+          '<div class="z-fallback-btns">' +
+            '<button class="z-btn" style="flex:1;justify-content:center;font-size:10px;" onclick="zotra.linkWS()">Link workspace</button>' +
+            '<button class="z-btn pri" style="flex:1;justify-content:center;font-size:10px;" onclick="zotra.createOpp()">Create opportunity</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  /* provisional baselines */
+  if (b.provisionals.length) {
+    var $bl = secEl('Provisional baselines');
+    $bl.find('.z-sec-lbl').append('<span>— provisional only, never writes confirmed baselines</span>');
+    var $blRows = $('<div>');
+    b.provisionals.forEach(function (p) {
+      var dc = p.conf === 'conf' ? 'var(--z-teal)' : 'var(--z-amber)';
+      $blRows.append(
+        '<div class="z-bl-row">' +
+          '<div class="z-bl-dot" style="background:' + dc + ';"></div>' +
+          '<span class="z-bl-key">' + p.key + '</span>' +
+          '<span class="z-bl-val' + (p.conf === 'conf' ? ' conf' : '') + '">' + p.val + '</span>' +
+        '</div>'
+      );
+    });
+    /* add signal */
+    $blRows.append(
+      '<button class="z-add-sig" onclick="zotra.addSignal()">' +
+        '<svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+        'Add signal (provisional only)' +
+      '</button>'
+    );
+    $bl.find('div:last').append($blRows);
+    $c.append($bl);
+  }
+
+  /* stakeholders */
+  if (b.stakeholders.length) {
+    var $sh = secEl('Detected stakeholders');
+    var $shRows = $('<div>');
+    b.stakeholders.forEach(function (s) {
+      $shRows.append(
+        '<div class="z-sh-row">' +
+          '<div class="z-sh-av">' + s.ini + '</div>' +
+          '<div style="flex:1;min-width:0;"><div class="z-sh-nm">' + s.name + '</div><div class="z-sh-role">' + s.role + '</div></div>' +
+          '<span class="xb ' + (s.engaged ? 'xb-conf' : 'xb-prov') + '" style="font-size:8px;">' + (s.engaged ? 'Engaged' : 'Not engaged') + '</span>' +
+          '<span class="z-sh-auth xb xb-acc" style="font-size:8px;">' + (AUTH[s.auth] || s.auth) + '</span>' +
+        '</div>'
+      );
+    });
+    $sh.find('div:last').append($shRows);
+    $c.append($sh);
+  }
+
+  /* open questions */
+  if (b.openQ.length) {
+    var $oq = secEl('Open questions');
+    $oq.find('.z-sec-lbl').append('<span>become first thread nodes</span>');
+    var $oqRows = $('<div>');
+    b.openQ.forEach(function (q) {
+      $oqRows.append(
+        '<div class="z-oq-row">' +
+          '<div class="z-oq-box"></div>' +
+          '<div class="z-oq-q">' + q.q + '</div>' +
+          '<span class="z-oq-pri" style="color:' + priColor(q.priority) + ';">' + q.priority + '</span>' +
+        '</div>'
+      );
+    });
+    $oq.find('div:last').append($oqRows);
+    $c.append($oq);
+  }
+}
+
+/* ─────────────────────────────────────────────────
+   DRAFT ZONE
+───────────────────────────────────────────────── */
+function renderDraftZone(t, $c) {
+  var d = t.draft;
+
+  /* calibration badge */
+  var $calib = $('<div class="z-sec"><div>');
+  $calib.find('div').html(
+    '<div class="z-calib">' +
+      '<span class="z-calib-lbl">Calibrated to: ' + d.calibration + '</span>' +
+    '</div>'
+  );
+  $c.append($calib);
+
+  /* qual draft notice */
+  if (d.draftType === 'qual') {
+    var $qn = $('<div class="z-sec"><div>');
+    $qn.find('div').html(
+      '<div class="z-qual-draft">◌ No workspace linked — draft is a qualification question sequence, not a proposal.</div>'
+    );
+    $c.append($qn);
+  }
+
+  /* draft text */
+  var $dSec = secEl('Zotra draft reply');
+  $dSec.find('.z-sec-lbl').append('<span>always sends from your own address</span>');
+  $dSec.find('div:last').html(
+    '<div class="z-draft-txt" id="z-draft-txt">' + d.text.replace(/\n/g, '<br>') + '</div>' +
+    '<div style="margin-top:7px;display:flex;flex-direction:column;gap:6px;">' +
+      '<button class="z-draft-copy-btn" onclick="zotra.copyDraft()">' +
+        '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
+        'Copy draft to clipboard' +
+      '</button>' +
+      '<div class="z-send-note">Zotra never sends from your address directly. Copy, paste into Gmail compose, and edit before sending.</div>' +
+    '</div>'
+  );
+  $c.append($dSec);
+
+  /* auto-send section */
+  var $as = secEl('Auto-send rules');
+  $as.find('div:last').html(
+    '<div class="z-as-sec">' +
+      '<div class="z-as-title">Eligible for auto-send (where Admin has enabled)</div>' +
+      '<div class="z-as-row"><span>Portal reminders</span><div class="z-tog on" onclick="$(this).toggleClass(\'on\')"></div></div>' +
+      '<div class="z-as-row"><span>Payment resends</span><div class="z-tog on" onclick="$(this).toggleClass(\'on\')"></div></div>' +
+      '<div class="z-as-row"><span>Appointment confirmations</span><div class="z-tog on" onclick="$(this).toggleClass(\'on\')"></div></div>' +
+      '<div class="z-as-row"><span>Receipt acknowledgements</span><div class="z-tog on" onclick="$(this).toggleClass(\'on\')"></div></div>' +
+      '<div class="z-never"><strong>Never auto-send (platform enforced):</strong> pricing proposals · renewal openings · churn outreach · new contacts · Rasa below threshold</div>' +
+    '</div>'
+  );
+  $c.append($as);
+}
+
+/* ─────────────────────────────────────────────────
+   ACTIVITY ZONE
+───────────────────────────────────────────────── */
+function renderActivityZone(t, $c) {
+  /* disable toggle */
+  var $tog = $('<div class="z-sec"><div>');
+  $tog.find('div').html(
+    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">' +
+      '<div class="z-tog on" id="z-autosend-tog" onclick="$(this).toggleClass(\'on\');zotra.toggleAutoSend()"></div>' +
+      '<span style="font-size:11px;color:var(--z-text-2);">Auto-send enabled for this thread</span>' +
+    '</div>' +
+    '<div style="font-size:10px;color:var(--z-text-3);">Overrides org-level setting for this thread only. ' +
+      '<span style="color:var(--z-accent-tx);cursor:pointer;" onclick="zotra.openWS()">View workspace log ›</span>' +
+    '</div>'
+  );
+  $c.append($tog);
+
+  /* activity log */
+  var $actSec = secEl('Thread activity');
+  var $rows = $('<div>');
+  t.activity.forEach(function (a) {
+    $rows.append(
+      '<div class="z-act-row">' +
+        '<div class="z-act-dot" style="background:' + adotC(a.dot) + ';"></div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div class="z-act-type">' + actTypeLbl(a.type) + '</div>' +
+          '<div class="z-act-desc">' + a.desc + '</div>' +
+          '<div class="z-act-meta">' + a.meta + '</div>' +
+        '</div>' +
+        '<div class="z-act-time">' + a.time + '</div>' +
+      '</div>'
+    );
+  });
+  $actSec.find('div:last').append($rows);
+  $c.append($actSec);
+}
+
+/* ─────────────────────────────────────────────────
+   ACTION STRIP
+───────────────────────────────────────────────── */
+function renderActionStrip(t) {
+  var $strip = $('#z-actions').empty();
+  if (!t.linked) {
+    $strip.append(
+      '<button class="z-act-btn create" onclick="zotra.createOpp()">' +
+        '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>' +
+        'Create opportunity' +
+      '</button>'
+    );
+  }
+  $strip.append(
+    '<button class="z-act-btn link" onclick="zotra.linkWS()">' +
+      '<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' +
+      (t.linked ? 'Workspace' : 'Link') +
+    '</button>'
+  );
+  $strip.append(
+    '<button class="z-act-btn open" onclick="zotra.openWS()">' +
+      '<svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>' +
+      'Open in Zotra' +
+    '</button>'
+  );
+  $strip.append(
+    '<button class="z-act-btn upload" onclick="zotra.openTranscript()">' +
+      '<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>' +
+      'Transcript' +
+    '</button>'
+  );
+}
+
+/* ─────────────────────────────────────────────────
+   SECTION HELPER
+───────────────────────────────────────────────── */
+function secEl(label) {
+  var $s = $('<div class="z-sec">');
+  $s.html('<div class="z-sec-lbl">' + label + '</div><div></div>');
+  return $s;
+}
+
+/* ─────────────────────────────────────────────────
+   TRANSCRIPT OVERLAY
+───────────────────────────────────────────────── */
+var ZOTRA_OV = {
+  open: function () {
+    itemStates = {};
+    $('#z-extract-items').hide().empty();
+    $('#z-ov-followup,#z-ov-save').hide();
+    $('#z-ov-sub').text('Upload a transcript to extract and review confirmable facts');
+    updateOvCount();
+    $('#z-overlay').addClass('open');
+  },
+  close: function () {
+    $('#z-overlay').removeClass('open');
+    itemStates = {};
+  }
+};
+
+$('#z-ov-close').on('click', function () { ZOTRA_OV.close(); });
+
+function updateOvCount() {
+  var n = Object.keys(itemStates).filter(function (k) { return itemStates[k] === 'confirmed'; }).length;
+  $('#z-ov-note').text(n + ' item' + (n !== 1 ? 's' : '') + ' confirmed — writes with internally_confirmed attribution on save');
+}
+
+function renderExtractItems() {
+  var $body = $('#z-extract-items').show().empty();
+  EXTRACT_ITEMS.forEach(function (item) {
+    var state = itemStates[item.id] || '';
+    var confirmed = state === 'confirmed', discarded = state === 'discarded';
+    var catLabel = { confirmable:'✓ Confirmable fact', provisional:'◌ Provisional signal', parking:'Parking lot →', noise:'Noise' }[item.cat];
+    var $card = $('<div class="z-ex ' + item.cat.slice(0, 3) + '">');
+    $card.html(
+      '<div class="z-ex-hd">' +
+        '<span class="z-ex-cat">' + catLabel + '</span>' +
+        (confirmed ? '<span class="xb xb-conf" style="font-size:8px;">✓ Confirmed</span>' : '') +
+        (discarded ? '<span class="xb xb-red" style="font-size:8px;">✕ Discarded</span>' : '') +
+      '</div>' +
+      '<div class="z-ex-body">' +
+        '<div class="z-ex-key">' + item.key + '</div>' +
+        '<div>' + item.val + '</div>' +
+        '<div class="z-ex-orig">"' + item.orig + '"</div>' +
+      '</div>' +
+      '<div class="z-ex-acts">' +
+        (item.cat !== 'noise' && !confirmed
+          ? '<button class="z-btn teal" style="font-size:9px;padding:2px 7px;" data-confirm="' + item.id + '">✓ Confirm</button>' : '') +
+        (confirmed
+          ? '<button class="z-btn" style="font-size:9px;padding:2px 7px;" data-undo="' + item.id + '">Undo</button>' : '') +
+        (!confirmed
+          ? '<button class="z-btn" style="font-size:9px;padding:2px 7px;" data-edit="' + item.id + '">Edit</button>' : '') +
+        (!discarded
+          ? '<button class="z-btn" style="font-size:9px;padding:2px 7px;color:var(--z-red-tx);" data-discard="' + item.id + '">✕</button>'
+          : '<button class="z-btn" style="font-size:9px;padding:2px 7px;" data-restore="' + item.id + '">Restore</button>') +
+      '</div>'
+    );
+    $body.append($card);
+  });
+}
+
+$('#z-ov-body').on('click', '[data-confirm]', function () {
+  itemStates[$(this).data('confirm')] = 'confirmed';
+  renderExtractItems(); updateOvCount();
+  ztoast('success', 'Confirmed', 'Will write to baseline with internally_confirmed attribution.');
+}).on('click', '[data-undo]', function () {
+  delete itemStates[$(this).data('undo')];
+  renderExtractItems(); updateOvCount();
+}).on('click', '[data-discard]', function () {
+  itemStates[$(this).data('discard')] = 'discarded';
+  renderExtractItems(); updateOvCount();
+  ztoast('info', 'Discarded', 'Item removed.');
+}).on('click', '[data-restore]', function () {
+  delete itemStates[$(this).data('restore')];
+  renderExtractItems(); updateOvCount();
+}).on('click', '[data-edit]', function () {
+  ztoast('info', 'Edit', 'Inline signal editor opens here.');
+});
+
+$('#z-ov-followup').on('click', function () {
+  ztoast('success', 'Follow-up email generated', 'Agent-drafted follow-up ready. Copy to Gmail compose — client acknowledgement closes the bilateral loop.');
+});
+$('#z-ov-save').on('click', function () {
+  var n = Object.keys(itemStates).filter(function (k) { return itemStates[k] === 'confirmed'; }).length;
+  if (!n) { ztoast('warning', 'Nothing to save', 'Confirm at least one item first.'); return; }
+  ZOTRA_OV.close();
+  ztoast('success', 'Baselines updated', n + ' field' + (n !== 1 ? 's' : '') + ' written with internally_confirmed attribution. Send the follow-up email to close the bilateral loop.');
+});
+
+/* ─────────────────────────────────────────────────
+   PUBLIC API (called from inline handlers)
+───────────────────────────────────────────────── */
+window.zotra = {
+  createOpp: function () {
+    var t = currentThread();
+    if (!t) return;
+    if (t.preQual) {
+      ztoast('warning', 'Pre-qualification active', 'Resolve minimum info before creating opportunity: ' + (t.preQualMissing[0] || ''));
+      return;
+    }
+    t.linked = true;
+    t.workspaceName = t.company;
+    renderActionStrip(t);
+    setTab('brief');
+    ztoast('success', 'Opportunity created', t.company + ' — Opportunity Brief pre-seeded from email signals.');
+  },
+  linkWS: function () {
+    var t = currentThread(); if (!t) return;
+    ztoast('info', 'Link to workspace', 'Workspace selector coming soon. For now, opportunity will be created.');
+  },
+  openWS: function () {
+    var t = currentThread(); if (!t) return;
+    var dest = t.linked ? ('Workspace: ' + (t.workspaceName || t.company)) : ('Opportunity for ' + t.company);
+    ztoast('info', 'Open in Zotra', 'Deep-linking to ' + dest + '…');
+  },
+  copyDraft: function () {
+    var txt = $('#z-draft-txt').text();
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(txt).then(function () {
+        ztoast('success', 'Copied', 'Paste into Gmail compose and edit before sending from your address.');
+      }).catch(function () {
+        ztoast('info', 'Draft ready', 'Select the text above and copy manually, then paste into Gmail compose.');
+      });
+    } else {
+      ztoast('info', 'Draft ready', 'Select the text and copy manually, then paste into Gmail compose.');
+    }
+  },
+  toggleAutoSend: function () {
+    var on = $('#z-autosend-tog').hasClass('on');
+    ztoast('info', 'Auto-send ' + (on ? 'enabled' : 'disabled'), 'Changed for this thread only.');
+  },
+  addSignal: function () {
+    ztoast('info', 'Add signal', 'Inline provisional signal editor opens here. Never writes to confirmed baselines.');
+  },
+  openTranscript: function () {
+    ZOTRA_OV.open();
+  },
+  simulateUpload: function () {
+    $('#z-ov-sub').text('TechNova renewal call — April 14, 2026');
+    $('#z-ov-followup,#z-ov-save').show();
+    renderExtractItems();
+    updateOvCount();
+  }
+};
+
+/* ─────────────────────────────────────────────────
+   INIT
+───────────────────────────────────────────────── */
+/* renderGmailList() skipped — no email list in standalone sidebar mode */
+/* default state: no thread open */
+$('#z-content').html(
+  '<div style="padding:28px 16px;text-align:center;color:var(--z-text-3);font-size:11px;line-height:1.7;">' +
+    '<div style="width:36px;height:36px;border-radius:8px;background:var(--z-bg);border:0.5px solid var(--z-border);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;">' +
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--z-text-3)" stroke-width="1.5" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' +
+    '</div>' +
+    '<div style="font-size:13px;font-weight:500;color:var(--z-text-2);margin-bottom:4px;">Zotra</div>' +
+    'Open an email thread to see commercial signals, detected facts, and a Five Forces-calibrated draft reply.' +
+  '</div>'
+);
+$('#z-actions').html(
+  '<div style="font-size:10px;color:var(--z-text-3);padding:2px 4px;text-align:center;width:100%;">Open a thread to activate Zotra</div>'
+);
+/* auto-open first thread */
+activateThread('t1');
+
+}); /* end document.ready */
+</script>
+</html>
